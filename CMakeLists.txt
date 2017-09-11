@@ -25,6 +25,7 @@ set(OPENSSLPP_SOURCES "${OPENSSLPP_ROOT}/src")
 
 set(HEADERS
     ${OPENSSLPP_HEADERS}/aes.h
+    ${OPENSSLPP_HEADERS}/base64.h
     ${OPENSSLPP_HEADERS}/dsa.h
     ${OPENSSLPP_HEADERS}/rsa.h
 
@@ -33,6 +34,7 @@ set(HEADERS
 
 set(SOURCES
     ${OPENSSLPP_SOURCES}/aes.cpp
+    ${OPENSSLPP_SOURCES}/base64.cpp
     ${OPENSSLPP_SOURCES}/dsa.cpp
     ${OPENSSLPP_SOURCES}/rsa.cpp
 

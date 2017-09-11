@@ -6,6 +6,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${OPENSSLPP_INCLUDE})
 
 set(SOURCES
+    test_base64.cpp
     test_dsa.cpp
     test_rsa.cpp
     main.cpp)

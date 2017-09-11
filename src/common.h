@@ -10,10 +10,21 @@ namespace opensslpp
 
     using BioMemPtr = std::unique_ptr<BIO, decltype(&BIO_free)>;
 
+    template <class BioMethod>
+    BioMemPtr makeBio(BioMethod method)
+    {
+        return BioMemPtr(BIO_new(method), BIO_free);
+    }
+
+    inline BioMemPtr makeBio(BIO* bio)
+    {
+        return BioMemPtr(bio, BIO_free);
+    }
+
     template <class WritePem>
     std::string keyToString(WritePem write)
     {
-        BioMemPtr bio(BIO_new(BIO_s_mem()), BIO_free);
+        auto bio = makeBio(BIO_s_mem());
 
         if (write(bio.get()) != Success)
             return std::string();
@@ -30,7 +41,7 @@ namespace opensslpp
     template <class Algorithm, class ReadPem>
     Algorithm* createWithKey(const std::string& key, ReadPem read)
     {
-        BioMemPtr bio(BIO_new_mem_buf(key.c_str(), key.size()), &BIO_free);
+        auto bio = makeBio(BIO_new_mem_buf(key.c_str(), key.size()));
         return read(bio.get());
     }
 }
