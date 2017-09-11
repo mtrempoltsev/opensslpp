@@ -20,6 +20,8 @@ set(OPENSSL_USE_STATIC_LIBS ON)
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
+find_package(Threads)
+
 set(OPENSSLPP_HEADERS "${OPENSSLPP_INCLUDE}/opensslpp")
 set(OPENSSLPP_SOURCES "${OPENSSLPP_ROOT}/src")
 
@@ -45,7 +47,10 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${OPENSSL_CRYPTO_LIBRARY})
+target_link_libraries(${PROJECT_NAME}
+    ${OPENSSL_CRYPTO_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_DL_LIBS})
 
 set(OPENSSLPP_TEST_PROJECT test_${PROJECT_NAME})
 

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <openssl/bio.h>
+#include <openssl/buffer.h>
 
 namespace opensslpp
 {
