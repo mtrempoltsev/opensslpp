@@ -8,6 +8,11 @@
 
 std::string opensslpp::Base64::encode(const std::vector<unsigned char>& data)
 {
+    return encode(data.data(), data.size());
+}
+
+std::string opensslpp::Base64::encode(const unsigned char* data, size_t size)
+{
     auto encoder = makeBio(BIO_f_base64());
     auto buffer = makeBio(BIO_s_mem());
     auto stream = BIO_push(encoder.get(), buffer.get());
@@ -16,7 +21,7 @@ std::string opensslpp::Base64::encode(const std::vector<unsigned char>& data)
         return std::string();
 
     BIO_set_flags(stream, BIO_FLAGS_BASE64_NO_NL);
-    BIO_write(stream, data.data(), data.size());
+    BIO_write(stream, data, size);
     BIO_flush(stream);
 
     BUF_MEM* ptr = nullptr;
@@ -27,19 +32,27 @@ std::string opensslpp::Base64::encode(const std::vector<unsigned char>& data)
 
 std::vector<unsigned char> opensslpp::Base64::decode(const std::string& text)
 {
+    const auto size = calculateLengthOfDecoded(text);
+
+    std::vector<unsigned char> result(size);
+
+    if (decode(text, result.data(), result.size()) != size)
+        return std::vector<unsigned char>();
+
+    return result;
+}
+
+size_t opensslpp::Base64::decode(const std::string& text, unsigned char* data, size_t size)
+{
     auto buffer = makeBio(BIO_new_mem_buf(text.c_str(), text.size()));
     auto decoder = makeBio(BIO_f_base64());
     auto stream = BIO_push(decoder.get(), buffer.get());
 
     if (!stream)
-        return std::vector<unsigned char>();
-
-    std::vector<unsigned char> result(calculateLengthOfDecoded(text));
+        return 0;
 
     BIO_set_flags(stream, BIO_FLAGS_BASE64_NO_NL);
-    BIO_read(stream, result.data(), result.size());
-
-    return result;
+    return BIO_read(stream, data, size);
 }
 
 size_t opensslpp::Base64::calculateLengthOfDecoded(const std::string& text)

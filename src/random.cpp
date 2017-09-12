@@ -27,6 +27,11 @@ std::vector<unsigned char> opensslpp::Random::getRandomBytes(size_t count) const
     return result;
 }
 
+bool opensslpp::Random::getRandomBytes(unsigned char* result, size_t count) const
+{
+    return RAND_bytes(result, count) == Success;
+}
+
 bool opensslpp::Random::seed()
 {
     //TODO implement this
@@ -34,5 +39,9 @@ bool opensslpp::Random::seed()
 }
 
 opensslpp::Random::Random()
+{
+}
+
+opensslpp::Random::~Random()
 {
 }

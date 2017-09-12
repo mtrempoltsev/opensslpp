@@ -6,8 +6,20 @@ TEST(base64, common)
 {
     const std::vector<unsigned char> data = { 1, 2, 3, 4, 5 };
 
-    const auto encoded = opensslpp::Base64::encode(data);
-    const auto decoded = opensslpp::Base64::decode(encoded);
+    {
+        const auto encoded = opensslpp::Base64::encode(data);
+        const auto decoded = opensslpp::Base64::decode(encoded);
 
-    ASSERT_EQ(data, decoded);
+        ASSERT_EQ(data, decoded);
+    }
+
+    {
+        std::vector<unsigned char> decoded(data.size());
+
+        const auto encoded = opensslpp::Base64::encode(data.data(), data.size());
+        const auto size = opensslpp::Base64::decode(encoded, decoded.data(), decoded.size());
+
+        ASSERT_EQ(size, decoded.size());
+        ASSERT_EQ(data, decoded);
+    }
 }

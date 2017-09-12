@@ -26,19 +26,21 @@ set(OPENSSLPP_HEADERS "${OPENSSLPP_INCLUDE}/opensslpp")
 set(OPENSSLPP_SOURCES "${OPENSSLPP_ROOT}/src")
 
 set(HEADERS
-    ${OPENSSLPP_HEADERS}/aes.h
+    ${OPENSSLPP_HEADERS}/aes256.h
     ${OPENSSLPP_HEADERS}/base64.h
     ${OPENSSLPP_HEADERS}/dsa.h
     ${OPENSSLPP_HEADERS}/rsa.h
+    ${OPENSSLPP_HEADERS}/sha256.h
 
     ${OPENSSLPP_HEADERS}/random.h
     )
 
 set(SOURCES
-    ${OPENSSLPP_SOURCES}/aes.cpp
+    ${OPENSSLPP_SOURCES}/aes256.cpp
     ${OPENSSLPP_SOURCES}/base64.cpp
     ${OPENSSLPP_SOURCES}/dsa.cpp
     ${OPENSSLPP_SOURCES}/rsa.cpp
+    ${OPENSSLPP_SOURCES}/sha256.cpp
 
     ${OPENSSLPP_SOURCES}/random.cpp
 

@@ -10,6 +10,8 @@ namespace opensslpp
     public:
         static std::unique_ptr<Random> create();
 
+        ~Random();
+
         Random(const Random&) = delete;
         Random& operator=(const Random&) = delete;
 
@@ -17,6 +19,7 @@ namespace opensslpp
         Random& operator=(Random&&) = delete;
 
         std::vector<unsigned char> getRandomBytes(size_t count) const;
+        bool getRandomBytes(unsigned char* result, size_t count) const;
 
     private:
         Random();
