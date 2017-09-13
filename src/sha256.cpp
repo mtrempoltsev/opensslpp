@@ -1,17 +1,26 @@
 ﻿#include "../include/opensslpp/sha256.h"
 
-#include <openssl/sha.h>
-
 #include "../include/opensslpp/base64.h"
 
-opensslpp::Sha256::Digest opensslpp::Sha256::calculate(const std::string& message)
+#include "common.h"
+
+bool opensslpp::Sha256::calculate(const std::string& message, Digest& result)
 {
-    Digest result;
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, message.c_str(), message.size());
-    SHA256_Final(result.data(), &sha256);
-    return result;
+    DigestContextPtr context(EVP_MD_CTX_create(), EVP_MD_CTX_free);
+    if (!context)
+        return false;
+
+    if (EVP_DigestInit_ex(context.get(), EVP_sha256(), nullptr) != Success)
+        return false;
+
+    if (EVP_DigestUpdate(context.get(), message.c_str(), message.size()) != Success)
+        return false;
+
+    unsigned size = 0;
+    if (EVP_DigestFinal_ex(context.get(), result.data(), &size) != Success)
+        return false;
+
+    return true;
 }
 
 std::string opensslpp::Sha256::toBase64(const Digest& digest)

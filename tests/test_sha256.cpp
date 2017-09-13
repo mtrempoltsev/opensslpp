@@ -4,9 +4,14 @@
 
 TEST(sha256, common)
 {
-    auto digest1 = opensslpp::Sha256::calculate("test1");
-    auto digest2 = opensslpp::Sha256::calculate("test2");
-    auto digest3 = opensslpp::Sha256::calculate("test1");
+    opensslpp::Sha256::Digest digest1;
+    ASSERT_TRUE(opensslpp::Sha256::calculate("test1", digest1));
+
+    opensslpp::Sha256::Digest digest2;
+    ASSERT_TRUE(opensslpp::Sha256::calculate("test2", digest2));
+
+    opensslpp::Sha256::Digest digest3;
+    ASSERT_TRUE(opensslpp::Sha256::calculate("test1", digest3));
 
     ASSERT_EQ(digest1, digest3);
     ASSERT_NE(digest1, digest2);

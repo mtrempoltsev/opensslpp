@@ -4,11 +4,14 @@
 
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
+#include <openssl/evp.h>
 
 namespace opensslpp
 {
     static constexpr int Success = 1;
 
+    using CipherContextPtr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
+    using DigestContextPtr = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>;
     using BioMemPtr = std::unique_ptr<BIO, decltype(&BIO_free)>;
 
     template <class BioMethod>

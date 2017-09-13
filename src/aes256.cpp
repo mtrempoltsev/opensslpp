@@ -1,19 +1,9 @@
 ﻿#include "../include/opensslpp/aes256.h"
 
-#include <cassert>
-
-#include <openssl/aes.h>
-#include <openssl/evp.h>
-
 #include "../include/opensslpp/base64.h"
 #include "../include/opensslpp/random.h"
 
 #include "common.h"
-
-namespace
-{
-    using CipherContextPtr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
-}
 
 std::unique_ptr<opensslpp::Aes256> opensslpp::Aes256::createNewKey()
 {
