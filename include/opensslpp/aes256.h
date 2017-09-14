@@ -29,6 +29,8 @@ namespace opensslpp
 
         bool decrypt(const std::vector<unsigned char>& cipher, const Iv& iv, std::vector<unsigned char>& plainData) const;
 
+        static size_t getCipherSize(size_t plainSize);
+
         ~Aes256();
 
         Aes256(const Aes256&) = delete;

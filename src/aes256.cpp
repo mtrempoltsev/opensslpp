@@ -59,7 +59,7 @@ bool opensslpp::Aes256::encrypt(const unsigned char* plainData, size_t plainData
     if (EVP_EncryptInit_ex(context.get(), EVP_aes_256_cbc(), nullptr, key_.data(), iv.data()) != Success)
         return false;
 
-    const size_t cipherSize = (plainDataSize / IvSize + 1) * IvSize;
+    const size_t cipherSize = getCipherSize(plainDataSize);
     cipher.resize(cipherSize);
 
     int size = 0;
@@ -97,6 +97,11 @@ bool opensslpp::Aes256::decrypt(const std::vector<unsigned char>& cipher, const 
     plainData.resize(plainDataSize);
 
     return true;
+}
+
+size_t opensslpp::Aes256::getCipherSize(size_t plainSize)
+{
+    return (plainSize / IvSize + 1) * IvSize;
 }
 
 opensslpp::Aes256::Aes256(std::unique_ptr<Random>&& random, Key&& key)

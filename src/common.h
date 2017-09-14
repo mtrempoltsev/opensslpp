@@ -10,6 +10,7 @@ namespace opensslpp
 {
     static constexpr int Success = 1;
 
+    using PublicKeyPtr = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
     using CipherContextPtr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
     using DigestContextPtr = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>;
     using BioMemPtr = std::unique_ptr<BIO, decltype(&BIO_free)>;
