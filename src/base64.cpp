@@ -6,12 +6,12 @@
 
 #include "common.h"
 
-std::string opensslpp::Base64::encode(const std::vector<unsigned char>& data)
+std::string opensslpp::Base64::encode(const std::vector<uint8_t>& data)
 {
     return encode(data.data(), data.size());
 }
 
-std::string opensslpp::Base64::encode(const unsigned char* data, size_t size)
+std::string opensslpp::Base64::encode(const uint8_t* data, size_t size)
 {
     auto encoder = makeBio(BIO_f_base64());
     auto buffer = makeBio(BIO_s_mem());
@@ -30,19 +30,19 @@ std::string opensslpp::Base64::encode(const unsigned char* data, size_t size)
     return std::string(ptr->data, ptr->length);
 }
 
-std::vector<unsigned char> opensslpp::Base64::decode(const std::string& text)
+std::vector<uint8_t> opensslpp::Base64::decode(const std::string& text)
 {
     const auto size = calculateLengthOfDecoded(text);
 
-    std::vector<unsigned char> result(size);
+    std::vector<uint8_t> result(size);
 
     if (decode(text, result.data(), result.size()) != size)
-        return std::vector<unsigned char>();
+        return std::vector<uint8_t>();
 
     return result;
 }
 
-size_t opensslpp::Base64::decode(const std::string& text, unsigned char* data, size_t size)
+size_t opensslpp::Base64::decode(const std::string& text, uint8_t* data, size_t size)
 {
     auto buffer = makeBio(BIO_new_mem_buf(text.c_str(), text.size()));
     auto decoder = makeBio(BIO_f_base64());

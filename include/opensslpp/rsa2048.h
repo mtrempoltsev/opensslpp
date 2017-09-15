@@ -14,7 +14,7 @@ namespace opensslpp
     public:
         static constexpr size_t Bits = 2048;
         static constexpr size_t KeySize = Bits / 8;
-        using EncryptedKey = std::array<unsigned char, KeySize>;
+        using EncryptedKey = std::array<uint8_t, KeySize>;
 
         static std::unique_ptr<Rsa2048> createNewKeys();
 
@@ -24,10 +24,13 @@ namespace opensslpp
         std::string publicKey() const;
         std::string privateKey() const;
 
-        bool encrypt(const std::string& plainText, EncryptedKey& key, Aes256::Iv& iv, std::vector<unsigned char>& cipher) const;
-        bool encrypt(const unsigned char* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<unsigned char>& cipher) const;
+        bool encrypt(const std::string& plainText, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const;
+        bool encrypt(const uint8_t* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const;
 
-        bool decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<unsigned char>& cipher, std::vector<unsigned char>& plainData) const;
+        bool decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<uint8_t>& cipher, std::vector<uint8_t>& plainData) const;
+
+        bool sign(const std::string& plainText, std::vector<uint8_t>& signature);
+        bool isCorrectSignature(const std::vector<uint8_t>& signature);
 
         Rsa2048(const Rsa2048&) = delete;
         Rsa2048& operator=(const Rsa2048&) = delete;

@@ -72,12 +72,12 @@ std::string opensslpp::Rsa2048::privateKey() const
     });
 }
 
-bool opensslpp::Rsa2048::encrypt(const std::string& plainText, EncryptedKey& key, Aes256::Iv& iv, std::vector<unsigned char>& cipher) const
+bool opensslpp::Rsa2048::encrypt(const std::string& plainText, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const
 {
-    return encrypt(reinterpret_cast<const unsigned char*>(plainText.c_str()), plainText.size(), key, iv, cipher);
+    return encrypt(reinterpret_cast<const uint8_t*>(plainText.c_str()), plainText.size(), key, iv, cipher);
 }
 
-bool opensslpp::Rsa2048::encrypt(const unsigned char* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<unsigned char>& cipher) const
+bool opensslpp::Rsa2048::encrypt(const uint8_t* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const
 {
     PublicKeyPtr publicKey(EVP_PKEY_new(), EVP_PKEY_free);
     if (!publicKey)
@@ -91,7 +91,7 @@ bool opensslpp::Rsa2048::encrypt(const unsigned char* plainData, size_t plainDat
         return false;
 
     const int publicKeysCount = 1;
-    unsigned char* keys[] = { key.data() };
+    uint8_t* keys[] = { key.data() };
     EVP_PKEY* publicKeys[] = { publicKey.get() };
 
     int keySize = 0;
@@ -111,7 +111,7 @@ bool opensslpp::Rsa2048::encrypt(const unsigned char* plainData, size_t plainDat
     return true;
 }
 
-bool opensslpp::Rsa2048::decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<unsigned char>& cipher, std::vector<unsigned char>& plainData) const
+bool opensslpp::Rsa2048::decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<uint8_t>& cipher, std::vector<uint8_t>& plainData) const
 {
     PublicKeyPtr privateKey(EVP_PKEY_new(), EVP_PKEY_free);
     if (!privateKey)

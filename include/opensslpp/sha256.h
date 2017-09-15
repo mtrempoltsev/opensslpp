@@ -8,7 +8,7 @@ namespace opensslpp
     {
     public:
         static constexpr size_t DigestSize = 32;
-        using Digest = std::array<unsigned char, DigestSize>;
+        using Digest = std::array<uint8_t, DigestSize>;
 
         static bool calculate(const std::string& message, Digest& result);
 

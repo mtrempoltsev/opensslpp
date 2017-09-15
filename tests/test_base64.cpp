@@ -4,7 +4,7 @@
 
 TEST(base64, common)
 {
-    const std::vector<unsigned char> data = { 1, 2, 3, 4, 5 };
+    const std::vector<uint8_t> data = { 1, 2, 3, 4, 5 };
 
     {
         const auto encoded = opensslpp::Base64::encode(data);
@@ -14,7 +14,7 @@ TEST(base64, common)
     }
 
     {
-        std::vector<unsigned char> decoded(data.size());
+        std::vector<uint8_t> decoded(data.size());
 
         const auto encoded = opensslpp::Base64::encode(data.data(), data.size());
         const auto size = opensslpp::Base64::decode(encoded, decoded.data(), decoded.size());

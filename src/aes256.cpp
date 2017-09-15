@@ -42,12 +42,12 @@ const opensslpp::Aes256::Key& opensslpp::Aes256::key() const
     return key_;
 }
 
-bool opensslpp::Aes256::encrypt(const std::string& plainText, std::vector<unsigned char>& cipher, Iv& iv) const
+bool opensslpp::Aes256::encrypt(const std::string& plainText, std::vector<uint8_t>& cipher, Iv& iv) const
 {
-    return encrypt(reinterpret_cast<const unsigned char*>(plainText.c_str()), plainText.size(), cipher, iv);
+    return encrypt(reinterpret_cast<const uint8_t*>(plainText.c_str()), plainText.size(), cipher, iv);
 }
 
-bool opensslpp::Aes256::encrypt(const unsigned char* plainData, size_t plainDataSize, std::vector<unsigned char>& cipher, Iv& iv) const
+bool opensslpp::Aes256::encrypt(const uint8_t* plainData, size_t plainDataSize, std::vector<uint8_t>& cipher, Iv& iv) const
 {
     if (!random_->getRandomBytes(iv.data(), iv.size()))
         return false;
@@ -72,7 +72,7 @@ bool opensslpp::Aes256::encrypt(const unsigned char* plainData, size_t plainData
     return true;
 }
 
-bool opensslpp::Aes256::decrypt(const std::vector<unsigned char>& cipher, const Iv& iv, std::vector<unsigned char>& plainData) const
+bool opensslpp::Aes256::decrypt(const std::vector<uint8_t>& cipher, const Iv& iv, std::vector<uint8_t>& plainData) const
 {
     CipherContextPtr context(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!context)

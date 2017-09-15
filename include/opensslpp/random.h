@@ -18,8 +18,8 @@ namespace opensslpp
         Random(Random&&) = delete;
         Random& operator=(Random&&) = delete;
 
-        std::vector<unsigned char> getRandomBytes(size_t count) const;
-        bool getRandomBytes(unsigned char* result, size_t count) const;
+        std::vector<uint8_t> getRandomBytes(size_t count) const;
+        bool getRandomBytes(uint8_t* result, size_t count) const;
 
     private:
         Random();

@@ -23,11 +23,11 @@ TEST(rsa, common)
     opensslpp::Rsa2048::EncryptedKey encryptedKey;
     opensslpp::Aes256::Iv iv;
 
-    std::vector<unsigned char> cipher;
+    std::vector<uint8_t> cipher;
 
     ASSERT_TRUE(publicRsa->encrypt(plainText, encryptedKey, iv, cipher));
 
-    std::vector<unsigned char> plainData;
+    std::vector<uint8_t> plainData;
 
     ASSERT_TRUE(privateRsa->decrypt(encryptedKey, iv, cipher, plainData));
 

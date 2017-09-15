@@ -14,12 +14,12 @@ TEST(aes256, common)
 
     const std::string plainText = "1234567890abcdef-+=!qwerty0987654321ABCDEF";
 
-    std::vector<unsigned char> cipher;
+    std::vector<uint8_t> cipher;
     opensslpp::Aes256::Iv iv;
 
     ASSERT_TRUE(aes->encrypt(plainText, cipher, iv));
 
-    std::vector<unsigned char> plainData;
+    std::vector<uint8_t> plainData;
 
     ASSERT_TRUE(aes->decrypt(cipher, iv, plainData));
 
