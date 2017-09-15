@@ -8,7 +8,6 @@ include_directories(${OPENSSLPP_INCLUDE})
 set(SOURCES
     test_aes256.cpp
     test_base64.cpp
-    test_dsa.cpp
     test_rsa2048.cpp
     test_sha256.cpp
     main.cpp)
