@@ -1,16 +1,28 @@
 ﻿#pragma once
 
-#include <memory>
-#include <vector>
+#include "details/common.h"
 
 namespace opensslpp
 {
     class Random final
     {
     public:
-        static std::unique_ptr<Random> create();
+        static std::unique_ptr<Random> create()
+        {
+            if (RAND_status() != Success)
+            {
+                if (!seed())
+                {
+                    return nullptr;
+                }
+            }
 
-        ~Random();
+            return std::unique_ptr<Random>(new Random());
+        }
+
+        ~Random()
+        {
+        }
 
         Random(const Random&) = delete;
         Random& operator=(const Random&) = delete;
@@ -18,12 +30,32 @@ namespace opensslpp
         Random(Random&&) = delete;
         Random& operator=(Random&&) = delete;
 
-        std::vector<uint8_t> getRandomBytes(size_t count) const;
-        bool getRandomBytes(uint8_t* result, size_t count) const;
+        std::vector<uint8_t> getRandomBytes(size_t count) const
+        {
+            {
+                std::vector<uint8_t> result(count);
+
+                if (RAND_bytes(result.data(), count) != Success)
+                    result.clear();
+
+                return result;
+            }
+        }
+
+        bool getRandomBytes(uint8_t* result, size_t count) const
+        {
+            return RAND_bytes(result, count) == Success;
+        }
 
     private:
-        Random();
+        Random()
+        {
+        }
 
-        static bool seed();
+        static bool seed()
+        {
+            //TODO implement this
+            return false;
+        }
     };
 }

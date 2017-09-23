@@ -1,6 +1,6 @@
 ﻿#include <gtest/gtest.h>
 
-#include <opensslpp/sha256.h>
+#include <opensslpp/sha.h>
 
 TEST(sha256, common)
 {

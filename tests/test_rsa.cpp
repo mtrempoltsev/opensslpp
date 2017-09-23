@@ -1,6 +1,6 @@
 ﻿#include <gtest/gtest.h>
 
-#include <opensslpp/rsa2048.h>
+#include <opensslpp/rsa.h>
 
 TEST(rsa, common)
 {

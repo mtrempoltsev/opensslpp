@@ -23,34 +23,20 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 find_package(Threads)
 
 set(OPENSSLPP_HEADERS "${OPENSSLPP_INCLUDE}/opensslpp")
-set(OPENSSLPP_SOURCES "${OPENSSLPP_ROOT}/src")
 
 set(HEADERS
-    ${OPENSSLPP_HEADERS}/aes256.h
+    ${OPENSSLPP_HEADERS}/aes.h
+    ${OPENSSLPP_HEADERS}/rsa.h
+    ${OPENSSLPP_HEADERS}/sha.h
+
     ${OPENSSLPP_HEADERS}/base64.h
-    ${OPENSSLPP_HEADERS}/rsa2048.h
-    ${OPENSSLPP_HEADERS}/sha256.h
-
     ${OPENSSLPP_HEADERS}/random.h
+
+    ${OPENSSLPP_HEADERS}/details/common.h
     )
 
-set(SOURCES
-    ${OPENSSLPP_SOURCES}/aes256.cpp
-    ${OPENSSLPP_SOURCES}/base64.cpp
-    ${OPENSSLPP_SOURCES}/rsa2048.cpp
-    ${OPENSSLPP_SOURCES}/sha256.cpp
-
-    ${OPENSSLPP_SOURCES}/random.cpp
-
-    ${OPENSSLPP_SOURCES}/common.h
-    )
-
-add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
-
-target_link_libraries(${PROJECT_NAME}
-    ${OPENSSL_CRYPTO_LIBRARY}
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS})
+add_library(${PROJECT_NAME} STATIC ${HEADERS})
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 set(OPENSSLPP_TEST_PROJECT test_${PROJECT_NAME})
 
