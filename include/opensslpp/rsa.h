@@ -17,18 +17,18 @@ namespace opensslpp
         {
             KeyContextPtr context(EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr), EVP_PKEY_CTX_free);
             if (!context)
-                return false;
+                return nullptr;
 
             if (EVP_PKEY_keygen_init(context.get()) != Success)
-                return false;
+                return nullptr;
 
             if (EVP_PKEY_CTX_set_rsa_keygen_bits(context.get(), Bits) != Success)
-                return false;
+                return nullptr;
 
             EVP_PKEY* key = nullptr;
 
             if (EVP_PKEY_keygen(context.get(), &key) != Success)
-                return false;
+                return nullptr;
 
             return std::unique_ptr<RsaT>(new RsaT(KeyPtr(key, EVP_PKEY_free)));
         }
