@@ -10,7 +10,6 @@ namespace opensslpp
     {
         using RsaT = Rsa<Bits, Mode>;
     public:
-        static constexpr size_t Bits = Bits;
         static constexpr size_t KeySize = Bits / 8;
         using EncryptedKey = std::array<uint8_t, KeySize>;
 
