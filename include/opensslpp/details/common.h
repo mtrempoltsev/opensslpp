@@ -29,7 +29,8 @@ namespace opensslpp
 
     using BignumPtr = std::unique_ptr<BIGNUM, decltype(&BN_free)>;
     using RsaPtr = std::unique_ptr<RSA, decltype(&RSA_free)>;
-    using PublicKeyPtr = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
+    using KeyPtr = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
+    using KeyContextPtr = std::unique_ptr<EVP_PKEY_CTX, decltype(&EVP_PKEY_CTX_free)>;
     using CipherContextPtr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
     using DigestContextPtr = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>;
     using BioMemPtr = std::unique_ptr<BIO, decltype(&BIO_free)>;
@@ -60,12 +61,5 @@ namespace opensslpp
             return std::string();
 
         return std::string(buffer->data, buffer->length);
-    }
-
-    template <class Algorithm, class ReadPem>
-    Algorithm* createWithKey(const std::string& key, ReadPem read)
-    {
-        auto bio = makeBio(BIO_new_mem_buf(key.c_str(), key.size()));
-        return read(bio.get());
     }
 }

@@ -32,4 +32,9 @@ TEST(rsa, common)
     ASSERT_TRUE(privateRsa->decrypt(encryptedKey, iv, cipher, plainData));
 
     ASSERT_EQ(plainText, std::string(reinterpret_cast<char*>(plainData.data()), plainData.size()));
+
+    std::vector<uint8_t> signature;
+    ASSERT_TRUE(privateRsa->sign(plainText, signature));
+
+    ASSERT_TRUE(publicRsa->isCorrectSignature(plainText, signature));
 }

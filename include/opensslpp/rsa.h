@@ -5,61 +5,57 @@
 
 namespace opensslpp
 {
-    template <size_t Bits, class Mode>
+    template <size_t Bits, class Mode, class Hash>
     class Rsa final
     {
-        using RsaT = Rsa<Bits, Mode>;
+        using RsaT = Rsa<Bits, Mode, Hash>;
     public:
         static constexpr size_t KeySize = Bits / 8;
         using EncryptedKey = std::array<uint8_t, KeySize>;
 
         static std::unique_ptr<RsaT> createNewKeys()
         {
-            if (!Random::create())
-                return nullptr;
+            KeyContextPtr context(EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr), EVP_PKEY_CTX_free);
+            if (!context)
+                return false;
 
-            BignumPtr exponent(BN_new(), BN_free);
-            if (!exponent)
-                return nullptr;
+            if (EVP_PKEY_keygen_init(context.get()) != Success)
+                return false;
 
-            if (BN_set_word(exponent.get(), RSA_F4) != Success)
-                return nullptr;
+            if (EVP_PKEY_CTX_set_rsa_keygen_bits(context.get(), Bits) != Success)
+                return false;
 
-            RsaPtr rsa(RSA_new(), RSA_free);
+            EVP_PKEY* key = nullptr;
 
-            if (RSA_generate_key_ex(rsa.get(), Bits, exponent.get(), nullptr) != Success)
-                return nullptr;
+            if (EVP_PKEY_keygen(context.get(), &key) != Success)
+                return false;
 
-            return std::unique_ptr<RsaT>(new RsaT(std::move(rsa)));
+            return std::unique_ptr<RsaT>(new RsaT(KeyPtr(key, EVP_PKEY_free)));
         }
 
         static std::unique_ptr<RsaT> createWithPublicKey(const std::string& publicKey)
         {
-            RsaPtr rsa(
-                createWithKey<RSA>(publicKey, [](BIO* bio)
-                {
-                    return PEM_read_bio_RSAPublicKey(bio, nullptr, nullptr, nullptr);
-                }),
-                RSA_free);
-            return std::unique_ptr<RsaT>(new RsaT(std::move(rsa)));
+            auto bio = makeBio(BIO_new_mem_buf(publicKey.c_str(), publicKey.size()));
+            KeyPtr key(PEM_read_bio_PUBKEY(bio.get(), nullptr, nullptr, nullptr), EVP_PKEY_free);
+            if (!key)
+                return nullptr;
+            return std::unique_ptr<RsaT>(new RsaT(std::move(key)));
         }
 
         static std::unique_ptr<RsaT> createWithPrivateKey(const std::string& privateKey)
         {
-            RsaPtr rsa(
-                createWithKey<RSA>(privateKey, [](BIO* bio)
-                {
-                    return PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr);
-                }),
-                RSA_free);
-            return std::unique_ptr<RsaT>(new RsaT(std::move(rsa)));
+            auto bio = makeBio(BIO_new_mem_buf(privateKey.c_str(), privateKey.size()));
+            KeyPtr key(PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr), EVP_PKEY_free);
+            if (!key)
+                return nullptr;
+            return std::unique_ptr<RsaT>(new RsaT(std::move(key)));
         }
 
         std::string publicKey() const
         {
             return keyToString([this](BIO* bio)
             {
-                return PEM_write_bio_RSAPublicKey(bio, rsa_.get());
+                return PEM_write_bio_PUBKEY(bio, rsaKey_.get());
             });
         }
 
@@ -67,7 +63,7 @@ namespace opensslpp
         {
             return keyToString([this](BIO* bio)
             {
-                return PEM_write_bio_RSAPrivateKey(bio, rsa_.get(), nullptr, nullptr, 0, nullptr, nullptr);
+                return PEM_write_bio_PrivateKey(bio, rsaKey_.get(), nullptr, nullptr, 0, nullptr, nullptr);
             });
         }
 
@@ -78,20 +74,13 @@ namespace opensslpp
 
         bool encrypt(const uint8_t* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const
         {
-            PublicKeyPtr publicKey(EVP_PKEY_new(), EVP_PKEY_free);
-            if (!publicKey)
-                return false;
-
-            if (EVP_PKEY_set1_RSA(publicKey.get(), rsa_.get()) != Success)
-                return false;
-
             CipherContextPtr context(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
             if (!context)
                 return false;
 
             const int publicKeysCount = 1;
             uint8_t* keys[] = { key.data() };
-            EVP_PKEY* publicKeys[] = { publicKey.get() };
+            EVP_PKEY* publicKeys[] = { rsaKey_.get() };
 
             int keySize = 0;
             if (EVP_SealInit(context.get(), Mode::function(), keys, &keySize, iv.data(), publicKeys, publicKeysCount) != publicKeysCount)
@@ -112,18 +101,11 @@ namespace opensslpp
 
         bool decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<uint8_t>& cipher, std::vector<uint8_t>& plainData) const
         {
-            PublicKeyPtr privateKey(EVP_PKEY_new(), EVP_PKEY_free);
-            if (!privateKey)
-                return false;
-
-            if (EVP_PKEY_set1_RSA(privateKey.get(), rsa_.get()) != Success)
-                return false;
-
             CipherContextPtr context(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
             if (!context)
                 return false;
 
-            if (EVP_OpenInit(context.get(), Mode::function(), key.data(), key.size(), iv.data(), privateKey.get()) != Success)
+            if (EVP_OpenInit(context.get(), Mode::function(), key.data(), key.size(), iv.data(), rsaKey_.get()) != Success)
                 return false;
 
             plainData.resize(cipher.size());
@@ -146,12 +128,44 @@ namespace opensslpp
 
         bool sign(const std::string& plainText, std::vector<uint8_t>& signature)
         {
+            DigestContextPtr context(EVP_MD_CTX_create(), EVP_MD_CTX_free);
+            if (!context)
+                return false;
 
+            if (EVP_DigestSignInit(context.get(), nullptr, Hash::function(), nullptr, rsaKey_.get()) != Success)
+                return false;
+
+            if (EVP_DigestSignUpdate(context.get(), plainText.c_str(), plainText.size()) != Success)
+                return false;
+
+            size_t size = 0;
+            if (EVP_DigestSignFinal(context.get(), nullptr, &size) != Success)
+                return false;
+
+            signature.resize(size);
+
+            if (EVP_DigestSignFinal(context.get(), signature.data(), &size) != Success)
+                return false;
+
+            return true;
         }
 
-        bool isCorrectSignature(const std::vector<uint8_t>& signature)
+        bool isCorrectSignature(const std::string& plainText, const std::vector<uint8_t>& signature)
         {
+            DigestContextPtr context(EVP_MD_CTX_create(), EVP_MD_CTX_free);
+            if (!context)
+                return false;
 
+            if (EVP_DigestVerifyInit(context.get(), nullptr, Hash::function(), nullptr, rsaKey_.get()) != Success)
+                return false;
+
+            if (EVP_DigestVerifyUpdate(context.get(), plainText.c_str(), plainText.size()) != Success)
+                return false;
+
+            if (EVP_DigestVerifyFinal(context.get(), signature.data(), signature.size()) != Success)
+                return false;
+
+            return true;
         }
 
         Rsa(const Rsa&) = delete;
@@ -165,14 +179,14 @@ namespace opensslpp
         }
 
     private:
-        Rsa(RsaPtr&& rsa)
-            : rsa_(std::move(rsa))
+        Rsa(KeyPtr&& key)
+            : rsaKey_(std::move(key))
         {
         }
 
     private:
-        RsaPtr rsa_;
+        KeyPtr rsaKey_;
     };
 
-    using Rsa2048 = Rsa<2048, AesCbc256Mode>;
+    using Rsa2048 = Rsa<2048, AesCbc256Mode, Sha256Type>;
 }
