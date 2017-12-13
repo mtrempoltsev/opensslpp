@@ -8,7 +8,7 @@ namespace opensslpp
     class Sha final
     {
     public:
-        static constexpr size_t DigestSize = 32;
+        static constexpr size_t DigestSize = Bits / 8;
         using Digest = std::array<uint8_t, DigestSize>;
 
         static bool calculate(const std::string& message, Digest& result)
@@ -44,4 +44,5 @@ namespace opensslpp
     };
 
     using Sha256 = Sha<256, Sha256Type>;
+    using Sha512 = Sha<512, Sha512Type>;
 }

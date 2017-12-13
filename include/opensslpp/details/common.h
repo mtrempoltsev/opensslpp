@@ -27,6 +27,11 @@ namespace opensslpp
         static constexpr decltype(EVP_sha256)* function = &EVP_sha256;
     };
 
+    struct Sha512Type
+    {
+        static constexpr decltype(EVP_sha256)* function = &EVP_sha512;
+    };
+
     using BignumPtr = std::unique_ptr<BIGNUM, decltype(&BN_free)>;
     using RsaPtr = std::unique_ptr<RSA, decltype(&RSA_free)>;
     using KeyPtr = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
