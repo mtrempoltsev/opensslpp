@@ -42,10 +42,11 @@ namespace opensslpp
             return std::unique_ptr<RsaT>(new RsaT(std::move(key)));
         }
 
-        static std::unique_ptr<RsaT> createWithPrivateKey(const std::string& privateKey)
+        static std::unique_ptr<RsaT> createWithPrivateKey(const std::string& privateKey, std::string passPhrase = std::string())
         {
             auto bio = makeBio(BIO_new_mem_buf(privateKey.c_str(), privateKey.size()));
-            KeyPtr key(PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr), EVP_PKEY_free);
+            auto ptr = const_cast<char*>(passPhrase.c_str());
+            KeyPtr key(PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, ptr), EVP_PKEY_free);
             if (!key)
                 return nullptr;
             return std::unique_ptr<RsaT>(new RsaT(std::move(key)));
@@ -64,6 +65,15 @@ namespace opensslpp
             return keyToString([this](BIO* bio)
             {
                 return PEM_write_bio_PrivateKey(bio, rsaKey_.get(), nullptr, nullptr, 0, nullptr, nullptr);
+            });
+        }
+
+        std::string privateKeyPKCS8(std::string passPhrase) const
+        {
+            return keyToString([this, &passPhrase](BIO* bio)
+            {
+                auto ptr = const_cast<char*>(passPhrase.c_str());
+                return PEM_write_bio_PKCS8PrivateKey(bio, rsaKey_.get(), EVP_aes_256_cbc(), nullptr, 0, nullptr, ptr);
             });
         }
 
