@@ -6,7 +6,8 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${OPENSSLPP_INCLUDE})
 
 set(SOURCES
-    test_aes.cpp
+    test_aes_cbc.cpp
+    test_aes_gcm.cpp
     test_base64.cpp
     test_rsa.cpp
     test_sha.cpp

@@ -21,7 +21,7 @@ TEST(rsa, common)
     const std::string plainText = "1234567890abcdef-+=!qwerty0987654321ABCDEF";
 
     opensslpp::Rsa2048::EncryptedKey encryptedKey;
-    opensslpp::Aes256::Iv iv;
+    opensslpp::Rsa2048::Iv iv;
 
     std::vector<uint8_t> cipher;
 
@@ -65,7 +65,7 @@ TEST(rsa, passPhrase)
     const std::string plainText = "1234567890abcdef-+=!qwerty0987654321ABCDEF";
 
     opensslpp::Rsa2048::EncryptedKey encryptedKey;
-    opensslpp::Aes256::Iv iv;
+    opensslpp::Rsa2048::Iv iv;
 
     std::vector<uint8_t> cipher;
 

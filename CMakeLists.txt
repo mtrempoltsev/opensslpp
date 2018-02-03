@@ -5,9 +5,12 @@ project(opensslpp)
 set(CMAKE_CXX_STANDARD 14)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /W4")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /W4")
     set(OPENSSLPP_ADDITIONAL_LIBS Ws2_32 crypt32)
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wpedantic")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wpedantic")
 endif()
 
 get_filename_component(OPENSSLPP_ROOT "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
@@ -15,6 +18,7 @@ get_filename_component(OPENSSLPP_ROOT "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
 set(OPENSSLPP_INCLUDE "${OPENSSLPP_ROOT}/include")
 include_directories(${OPENSSLPP_INCLUDE})
 
+set(OPENSSL_ROOT_DIR C:/libs/openssl-1.1.0f-vs2015)
 set(OPENSSL_MSVC_STATIC_RT ON)
 set(OPENSSL_USE_STATIC_LIBS ON)
 find_package(OpenSSL REQUIRED)
@@ -25,7 +29,8 @@ find_package(Threads)
 set(OPENSSLPP_HEADERS "${OPENSSLPP_INCLUDE}/opensslpp")
 
 set(HEADERS
-    ${OPENSSLPP_HEADERS}/aes.h
+    ${OPENSSLPP_HEADERS}/aes_cbc.h
+    ${OPENSSLPP_HEADERS}/aes_gcm.h
     ${OPENSSLPP_HEADERS}/rsa.h
     ${OPENSSLPP_HEADERS}/sha.h
 

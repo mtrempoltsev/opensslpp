@@ -17,19 +17,14 @@ namespace opensslpp
 {
     static constexpr int Success = 1;
 
-    struct AesCbc256Mode
-    {
-        static constexpr decltype(EVP_aes_256_cbc)* function = &EVP_aes_256_cbc;
-    };
-
     struct Sha256Type
     {
-        static constexpr decltype(EVP_sha256)* function = &EVP_sha256;
+        static constexpr decltype(EVP_sha256)* Function = &EVP_sha256;
     };
 
     struct Sha512Type
     {
-        static constexpr decltype(EVP_sha256)* function = &EVP_sha512;
+        static constexpr decltype(EVP_sha256)* Function = &EVP_sha512;
     };
 
     using BignumPtr = std::unique_ptr<BIGNUM, decltype(&BN_free)>;

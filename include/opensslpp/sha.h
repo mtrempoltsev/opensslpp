@@ -17,7 +17,7 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_DigestInit_ex(context.get(), Type::function(), nullptr) != Success)
+            if (EVP_DigestInit_ex(context.get(), Type::Function(), nullptr) != Success)
                 return false;
 
             if (EVP_DigestUpdate(context.get(), message.c_str(), message.size()) != Success)

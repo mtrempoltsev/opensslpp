@@ -1,17 +1,19 @@
 ﻿#pragma once
 
-#include "aes.h"
+#include "aes_cbc.h"
 #include "random.h"
 
 namespace opensslpp
 {
-    template <size_t Bits, class Mode, class Hash>
+    template <size_t Bits, class Aes, class Hash>
     class Rsa final
     {
-        using RsaT = Rsa<Bits, Mode, Hash>;
+        using RsaT = Rsa<Bits, Aes, Hash>;
     public:
         static constexpr size_t KeySize = Bits / 8;
         using EncryptedKey = std::array<uint8_t, KeySize>;
+
+        using Iv = typename Aes::Iv;
 
         static std::unique_ptr<RsaT> createNewKeys()
         {
@@ -35,7 +37,7 @@ namespace opensslpp
 
         static std::unique_ptr<RsaT> createWithPublicKey(const std::string& publicKey)
         {
-            auto bio = makeBio(BIO_new_mem_buf(publicKey.c_str(), publicKey.size()));
+            auto bio = makeBio(BIO_new_mem_buf(publicKey.c_str(), static_cast<int>(publicKey.size())));
             KeyPtr key(PEM_read_bio_PUBKEY(bio.get(), nullptr, nullptr, nullptr), EVP_PKEY_free);
             if (!key)
                 return nullptr;
@@ -73,16 +75,16 @@ namespace opensslpp
             return keyToString([this, &passPhrase](BIO* bio)
             {
                 auto ptr = const_cast<char*>(passPhrase.c_str());
-                return PEM_write_bio_PKCS8PrivateKey(bio, rsaKey_.get(), EVP_aes_256_cbc(), nullptr, 0, nullptr, ptr);
+                return PEM_write_bio_PKCS8PrivateKey(bio, rsaKey_.get(), Aes::Mode(), nullptr, 0, nullptr, ptr);
             });
         }
 
-        bool encrypt(const std::string& plainText, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const
+        bool encrypt(const std::string& plainText, EncryptedKey& key, Iv& iv, std::vector<uint8_t>& cipher) const
         {
             return encrypt(reinterpret_cast<const uint8_t*>(plainText.c_str()), plainText.size(), key, iv, cipher);
         }
 
-        bool encrypt(const uint8_t* plainData, size_t plainDataSize, EncryptedKey& key, Aes256::Iv& iv, std::vector<uint8_t>& cipher) const
+        bool encrypt(const uint8_t* plainData, size_t plainDataSize, EncryptedKey& key, Iv& iv, std::vector<uint8_t>& cipher) const
         {
             CipherContextPtr context(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
             if (!context)
@@ -93,10 +95,10 @@ namespace opensslpp
             EVP_PKEY* publicKeys[] = { rsaKey_.get() };
 
             int keySize = 0;
-            if (EVP_SealInit(context.get(), Mode::function(), keys, &keySize, iv.data(), publicKeys, publicKeysCount) != publicKeysCount)
+            if (EVP_SealInit(context.get(), Aes::Mode(), keys, &keySize, iv.data(), publicKeys, publicKeysCount) != publicKeysCount)
                 return false;
 
-            const size_t cipherSize = Aes256::getCipherSize(plainDataSize);
+            const size_t cipherSize = Aes::getCipherSize(plainDataSize);
             cipher.resize(cipherSize);
 
             int size = 0;
@@ -109,13 +111,13 @@ namespace opensslpp
             return true;
         }
 
-        bool decrypt(const EncryptedKey& key, const Aes256::Iv& iv, const std::vector<uint8_t>& cipher, std::vector<uint8_t>& plainData) const
+        bool decrypt(const EncryptedKey& key, const Iv& iv, const std::vector<uint8_t>& cipher, std::vector<uint8_t>& plainData) const
         {
             CipherContextPtr context(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
             if (!context)
                 return false;
 
-            if (EVP_OpenInit(context.get(), Mode::function(), key.data(), key.size(), iv.data(), rsaKey_.get()) != Success)
+            if (EVP_OpenInit(context.get(), Aes::Mode(), key.data(), key.size(), iv.data(), rsaKey_.get()) != Success)
                 return false;
 
             plainData.resize(cipher.size());
@@ -142,7 +144,7 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_DigestSignInit(context.get(), nullptr, Hash::function(), nullptr, rsaKey_.get()) != Success)
+            if (EVP_DigestSignInit(context.get(), nullptr, Hash::Function(), nullptr, rsaKey_.get()) != Success)
                 return false;
 
             if (EVP_DigestSignUpdate(context.get(), plainText.c_str(), plainText.size()) != Success)
@@ -166,7 +168,7 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_DigestVerifyInit(context.get(), nullptr, Hash::function(), nullptr, rsaKey_.get()) != Success)
+            if (EVP_DigestVerifyInit(context.get(), nullptr, Hash::Function(), nullptr, rsaKey_.get()) != Success)
                 return false;
 
             if (EVP_DigestVerifyUpdate(context.get(), plainText.c_str(), plainText.size()) != Success)
@@ -198,5 +200,5 @@ namespace opensslpp
         KeyPtr rsaKey_;
     };
 
-    using Rsa2048 = Rsa<2048, AesCbc256Mode, Sha256Type>;
+    using Rsa2048 = Rsa<2048, Aes256Cbc, Sha256Type>;
 }

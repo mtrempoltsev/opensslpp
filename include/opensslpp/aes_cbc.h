@@ -7,18 +7,18 @@ namespace opensslpp
 {
     class Random;
 
-    template <size_t Bits, size_t IvBits, class Mode>
-    class Aes final
+    template <size_t Bits>
+    class AesCbc final
     {
-        using AesT = Aes<Bits, IvBits, Mode>;
     public:
-        static constexpr size_t KeySize = Bits / 8;
-        using Key = std::array<uint8_t, KeySize>;
+        using Key = std::array<uint8_t, Bits / 8>;
 
-        static constexpr size_t IvSize = IvBits / 8;
+        static constexpr size_t IvSize = 128 / 8;
         using Iv = std::array<uint8_t, IvSize>;
 
-        static std::unique_ptr<AesT> createNewKey()
+        static constexpr decltype(EVP_aes_256_cbc)* Mode = &EVP_aes_256_cbc;
+
+        static std::unique_ptr<AesCbc> createNewKey()
         {
             auto random = Random::create();
             if (!random)
@@ -28,10 +28,10 @@ namespace opensslpp
             if (!random->getRandomBytes(key.data(), key.size()))
                 return nullptr;
 
-            return std::unique_ptr<AesT>(new AesT(std::move(random), std::move(key)));
+            return std::unique_ptr<AesCbc>(new AesCbc(std::move(random), std::move(key)));
         }
 
-        static std::unique_ptr<AesT> createWithKey(const std::string& base64Key)
+        static std::unique_ptr<AesCbc> createWithKey(const std::string& base64Key)
         {
             auto random = Random::create();
             if (!random)
@@ -42,7 +42,7 @@ namespace opensslpp
             if (Base64::decode(base64Key, key.data(), key.size()) != key.size())
                 return nullptr;
 
-            return std::unique_ptr<AesT>(new AesT(std::move(random), std::move(key)));
+            return std::unique_ptr<AesCbc>(new AesCbc(std::move(random), std::move(key)));
         }
 
         std::string base64Key() const
@@ -69,18 +69,23 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_EncryptInit_ex(context.get(), Mode::function(), nullptr, key_.data(), iv.data()) != Success)
+            if (EVP_EncryptInit_ex(context.get(), EVP_aes_256_cbc(), nullptr, key_.data(), iv.data()) != Success)
                 return false;
 
-            const size_t cipherSize = getCipherSize(plainDataSize);
-            cipher.resize(cipherSize);
+            cipher.resize(getCipherSize(plainDataSize));
 
             int size = 0;
             if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
                 return false;
 
+            auto cipherDataSize = size;
+
             if (EVP_EncryptFinal_ex(context.get(), cipher.data() + size, &size) != Success)
                 return false;
+
+            cipherDataSize += size;
+
+            cipher.resize(cipherDataSize);
 
             return true;
         }
@@ -91,7 +96,7 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_DecryptInit_ex(context.get(), Mode::function(), nullptr, key_.data(), iv.data()) != Success)
+            if (EVP_DecryptInit_ex(context.get(), EVP_aes_256_cbc(), nullptr, key_.data(), iv.data()) != Success)
                 return false;
 
             plainData.resize(cipher.size());
@@ -117,18 +122,8 @@ namespace opensslpp
             return (plainSize / IvSize + 1) * IvSize;
         }
 
-        ~Aes()
-        {
-        }
-
-        Aes(const Aes&) = delete;
-        Aes& operator=(const Aes&) = delete;
-
-        Aes(Aes&&) = delete;
-        Aes& operator=(Aes&&) = delete;
-
     private:
-        Aes(std::unique_ptr<Random>&& random, Key&& key)
+        AesCbc(std::unique_ptr<Random>&& random, Key&& key)
             : random_(std::move(random))
             , key_(std::move(key))
         {
@@ -139,5 +134,5 @@ namespace opensslpp
         Key key_;
     };
 
-    using Aes256 = Aes<256, 128, AesCbc256Mode>;
+    using Aes256Cbc = AesCbc<256>;
 }
