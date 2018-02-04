@@ -82,17 +82,12 @@ namespace opensslpp
             cipher.resize(getCipherSize(plainDataSize));
 
             int size = 0;
+
             if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
                 return false;
 
-            auto cipherDataSize = size;
-
             if (EVP_EncryptFinal_ex(context.get(), cipher.data() + size, &size) != Success)
                 return false;
-
-            cipherDataSize += size;
-
-            cipher.resize(cipherDataSize);
 
             if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_GET_TAG, tag.size(), tag.data()) != Success)
                 return false;
@@ -118,10 +113,9 @@ namespace opensslpp
             plainData.resize(cipher.size());
 
             int size = 0;
+
             if (EVP_DecryptUpdate(context.get(), plainData.data(), &size, cipher.data(), cipher.size()) != Success)
                 return false;
-
-            auto plainDataSize = size;
 
             if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_SET_TAG, tag.size(), const_cast<uint8_t*>(tag.data())) != Success)
                 return false;
@@ -129,16 +123,12 @@ namespace opensslpp
             if (EVP_DecryptFinal_ex(context.get(), plainData.data() + size, &size) != Success)
                 return false;
 
-            plainDataSize += size;
-
-            plainData.resize(plainDataSize);
-
             return true;
         }
 
-        static size_t getCipherSize(size_t plainSize)
+        static constexpr size_t getCipherSize(size_t plainSize)
         {
-            return (plainSize / IvSize + 1) * IvSize;
+            return plainSize;
         }
 
     private:

@@ -75,17 +75,12 @@ namespace opensslpp
             cipher.resize(getCipherSize(plainDataSize));
 
             int size = 0;
+
             if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
                 return false;
 
-            auto cipherDataSize = size;
-
             if (EVP_EncryptFinal_ex(context.get(), cipher.data() + size, &size) != Success)
                 return false;
-
-            cipherDataSize += size;
-
-            cipher.resize(cipherDataSize);
 
             return true;
         }
@@ -117,7 +112,7 @@ namespace opensslpp
             return true;
         }
 
-        static size_t getCipherSize(size_t plainSize)
+        static constexpr size_t getCipherSize(size_t plainSize)
         {
             return (plainSize / IvSize + 1) * IvSize;
         }
