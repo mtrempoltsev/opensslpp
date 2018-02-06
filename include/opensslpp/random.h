@@ -35,7 +35,7 @@ namespace opensslpp
             {
                 std::vector<uint8_t> result(count);
 
-                if (RAND_bytes(result.data(), count) != Success)
+                if (RAND_bytes(result.data(), static_cast<int>(count)) != Success)
                     result.clear();
 
                 return result;
@@ -44,7 +44,7 @@ namespace opensslpp
 
         bool getRandomBytes(uint8_t* result, size_t count) const
         {
-            return RAND_bytes(result, count) == Success;
+            return RAND_bytes(result, static_cast<int>(count)) == Success;
         }
 
     private:

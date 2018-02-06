@@ -22,7 +22,7 @@ namespace opensslpp
                 return std::string();
 
             BIO_set_flags(stream, BIO_FLAGS_BASE64_NO_NL);
-            BIO_write(stream, data, size);
+            BIO_write(stream, data, static_cast<int>(size));
             BIO_flush(stream);
 
             BUF_MEM* ptr = nullptr;
@@ -45,7 +45,7 @@ namespace opensslpp
 
         static size_t decode(const std::string& text, uint8_t* data, size_t size)
         {
-            auto buffer = makeBio(BIO_new_mem_buf(text.c_str(), text.size()));
+            auto buffer = makeBio(BIO_new_mem_buf(text.c_str(), static_cast<int>(text.size())));
             auto decoder = makeBio(BIO_f_base64());
             auto stream = BIO_push(decoder.get(), buffer.get());
 
@@ -53,7 +53,7 @@ namespace opensslpp
                 return 0;
 
             BIO_set_flags(stream, BIO_FLAGS_BASE64_NO_NL);
-            return BIO_read(stream, data, size);
+            return BIO_read(stream, data, static_cast<int>(size));
         }
 
     private:
