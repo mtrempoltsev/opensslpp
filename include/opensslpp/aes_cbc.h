@@ -76,7 +76,7 @@ namespace opensslpp
 
             int size = 0;
 
-            if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
+            if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, static_cast<int>(plainDataSize)) != Success)
                 return false;
 
             if (EVP_EncryptFinal_ex(context.get(), cipher.data() + size, &size) != Success)
@@ -97,7 +97,7 @@ namespace opensslpp
             plainData.resize(cipher.size());
 
             int size = 0;
-            if (EVP_DecryptUpdate(context.get(), plainData.data(), &size, cipher.data(), cipher.size()) != Success)
+            if (EVP_DecryptUpdate(context.get(), plainData.data(), &size, cipher.data(), static_cast<int>(cipher.size())) != Success)
                 return false;
 
             auto plainDataSize = size;

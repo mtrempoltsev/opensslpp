@@ -83,13 +83,13 @@ namespace opensslpp
 
             int size = 0;
 
-            if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
+            if (EVP_EncryptUpdate(context.get(), cipher.data(), &size, plainData, static_cast<int>(plainDataSize)) != Success)
                 return false;
 
             if (EVP_EncryptFinal_ex(context.get(), cipher.data() + size, &size) != Success)
                 return false;
 
-            if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_GET_TAG, tag.size(), tag.data()) != Success)
+            if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_GET_TAG, static_cast<int>(tag.size()), tag.data()) != Success)
                 return false;
 
             return true;
@@ -114,10 +114,10 @@ namespace opensslpp
 
             int size = 0;
 
-            if (EVP_DecryptUpdate(context.get(), plainData.data(), &size, cipher.data(), cipher.size()) != Success)
+            if (EVP_DecryptUpdate(context.get(), plainData.data(), &size, cipher.data(), static_cast<int>(cipher.size())) != Success)
                 return false;
 
-            if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_SET_TAG, tag.size(), const_cast<uint8_t*>(tag.data())) != Success)
+            if (EVP_CIPHER_CTX_ctrl(context.get(), EVP_CTRL_GCM_SET_TAG, static_cast<int>(tag.size()), const_cast<uint8_t*>(tag.data())) != Success)
                 return false;
 
             if (EVP_DecryptFinal_ex(context.get(), plainData.data() + size, &size) != Success)

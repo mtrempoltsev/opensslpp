@@ -46,7 +46,7 @@ namespace opensslpp
 
         static std::unique_ptr<RsaT> createWithPrivateKey(const std::string& privateKey, std::string passPhrase = std::string())
         {
-            auto bio = makeBio(BIO_new_mem_buf(privateKey.c_str(), privateKey.size()));
+            auto bio = makeBio(BIO_new_mem_buf(privateKey.c_str(), static_cast<int>(privateKey.size())));
             auto ptr = const_cast<char*>(passPhrase.c_str());
             KeyPtr key(PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, ptr), EVP_PKEY_free);
             if (!key)
@@ -102,7 +102,7 @@ namespace opensslpp
             cipher.resize(cipherSize);
 
             int size = 0;
-            if (EVP_SealUpdate(context.get(), cipher.data(), &size, plainData, plainDataSize) != Success)
+            if (EVP_SealUpdate(context.get(), cipher.data(), &size, plainData, static_cast<int>(plainDataSize)) != Success)
                 return false;
 
             if (EVP_SealFinal(context.get(), cipher.data() + size, &size) != Success)
@@ -117,13 +117,13 @@ namespace opensslpp
             if (!context)
                 return false;
 
-            if (EVP_OpenInit(context.get(), Aes::Mode(), key.data(), key.size(), iv.data(), rsaKey_.get()) != Success)
+            if (EVP_OpenInit(context.get(), Aes::Mode(), key.data(), static_cast<int>(key.size()), iv.data(), rsaKey_.get()) != Success)
                 return false;
 
             plainData.resize(cipher.size());
 
             int size = 0;
-            if (EVP_OpenUpdate(context.get(), plainData.data(), &size, cipher.data(), cipher.size()) != Success)
+            if (EVP_OpenUpdate(context.get(), plainData.data(), &size, cipher.data(), static_cast<int>(cipher.size())) != Success)
                 return false;
 
             auto plainDataSize = size;
