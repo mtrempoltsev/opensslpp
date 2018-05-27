@@ -32,7 +32,13 @@ namespace opensslpp
     using KeyPtr = std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)>;
     using KeyContextPtr = std::unique_ptr<EVP_PKEY_CTX, decltype(&EVP_PKEY_CTX_free)>;
     using CipherContextPtr = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
+#ifndef EVP_MD_CTX_destroy(ctx)
+    // Older versions that do not support "EVP_MD_CTX_free"
+    using DigestContextPtr = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_destroy)>;
+#else
+    // Later versions (after 1.1.0-pre2)
     using DigestContextPtr = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>;
+#endif
     using BioMemPtr = std::unique_ptr<BIO, decltype(&BIO_free)>;
 
     template <class BioMethod>
